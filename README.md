@@ -10,3 +10,5 @@ There is a precompiled firmware in the firmware folder of this project. I used V
 Use the precompiled "firmware_vendomnia_1magnet.bin" or download and import the project to VSCode or similar and compile and upload your own firmware.bin file.
 
 ![alt tag](https://raw.githubusercontent.com/damndemento/vendomniaBLE/main/wemos-esp32_com_oled-pinout.webp)
+
+![alt tag](https://raw.githubusercontent.com/damndemento/vendomniaBLE/main/esp32lolin.jpg)
