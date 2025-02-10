@@ -11,4 +11,4 @@ Use the precompiled "firmware_vendomnia_1magnet.bin" or download and import the 
 
 ![alt tag](https://raw.githubusercontent.com/damndemento/vendomniaBLE/main/wemos-esp32_com_oled-pinout.webp)
 
-![alt tag]([https://raw.githubusercontent.com/damndemento/vendomniaBLE/main/esp32lolin.jpg](https://github.com/damndemento/vendomniaBLE/blob/main/esp32lolin.jpg))
+![alt tag](https://github.com/damndemento/vendomniaBLE/blob/main/esp32lolin.jpg)
