@@ -706,4 +706,151 @@ void setup()
   // Start the OLED Display
   display.init();
   display.setFont(ArialMT_Plain_16);
-  display
+  display.flipScreenVertically(); // this is to flip the screen 180 degrees
+
+  display.clear();
+  display.setColor(WHITE);
+  display.setTextAlignment(TEXT_ALIGN_CENTER);
+  display.drawString(64, 4, "Vendomnia");
+  display.display();
+
+  SerialDebug.begin(115200);
+  SerialDebug.println("/************************************");
+  SerialDebug.println(" * Vendomnia Rower ");
+  SerialDebug.print(" * Version ");
+  SerialDebug.println(_VERSION);
+  SerialDebug.println(" ***********************************/");
+
+  initBLE();
+  currentTime = millis();
+  previousTime = millis();
+  initBleData();
+
+  stm_RA.clear(); // explicitly start clean
+  mps_RA.clear(); // explicitly start clean
+  pinMode(ROWERINPUT, INPUT_PULLUP);
+
+  // digitalWrite(ROWERINPUT, HIGH);
+  delay(500);
+  attachInterrupt(ROWERINPUT, rowerdebounceinterrupt, CHANGE);
+  timer1 = millis();
+  timer2 = millis();
+  reset();
+}
+
+void rowing()
+{
+  while (stoprowing = 0)
+  {
+    // calculate split times every 500m
+    if ((meters % 500) == 0 && meters > 0)
+    {
+      timer2 = millis();
+      if ((millis() - timer2) >= 1000)
+      {
+        split();
+      }
+    }
+
+    if ((millis() - timer1) >= 1000)
+    {
+      timer1 = millis();
+
+      // calculate meters/min
+      Ms = calcmetersmin();
+
+      // calculate moving average of strokes/min
+      old_spm = (int)spm;
+      calcstmra();
+      spm = stm_RA.getAverage() * 60;
+
+      // connecting
+      if (deviceConnected && !oldDeviceConnected)
+      {
+        // do stuff here on connecting
+        oldDeviceConnected = deviceConnected;
+      }
+
+      if (deviceConnected)
+      { //** Send a value to protopie. The value is in txValue **//
+
+        long sec = 1000 * (millis() - start);
+        rdKpi.strokeRate = (int)round(spm + old_spm);
+        rdKpi.strokeCount = strokes;
+        rdKpi.averageStokeRate = (int)(strokes * 60 * 2 / sec);
+        rdKpi.totalDistance = meters;
+        rdKpi.instantaneousPace = (int)round(500 / Ms); // pace for 500m
+        float avrMs = meters / sec;
+        rdKpi.averagePace = (int)round(500 / avrMs);
+        rdKpi.instantaneousPower = (int)round(2.8 * Ms * Ms * Ms); // https://www.concept2.com/indoor-rowers/training/calculators/watts-calculator
+        rdKpi.averagePower = (int)round(2.8 * avrMs * avrMs * avrMs);
+        rdKpi.elapsedTime = sec;
+
+        setCxRowerData();
+        // setCxLightRowerData();
+        // delay(500); // bluetooth stack will go into congestion, if too many packets are sent
+        SerialDebug.println("Send data " + String(rdKpi.strokeCount));
+
+        delay(10);
+
+        // Why coxswain need this notify for start???
+        char cRower[3];
+        cRower[0] = 0x01;
+        cRower[1] = 0x00;
+        cRower[2] = 0x00;
+        pDtCharacteristic->setValue((uint8_t *)cRower, 3);
+        pDtCharacteristic->notify();
+      }
+
+      // disconnecting
+      if (!deviceConnected && oldDeviceConnected)
+      {
+        pServer->startAdvertising(); // restart advertising
+        SerialDebug.println("start advertising");
+        oldDeviceConnected = deviceConnected;
+        resetTimer = 21;
+      }
+
+      if (resetTimer > 0)
+      {
+        if (resetTimer == 1)
+        {
+          resetTimer = 0;
+          clicks = 0;
+          break;
+        }
+        resetTimer = resetTimer - 1;
+      }
+    }
+
+    display.clear();
+    display.setFont(ArialMT_Plain_10);
+    display.setTextAlignment(TEXT_ALIGN_LEFT);
+    display.drawString(5, 23, "meters");
+    // display.drawString(24, 53, "time");
+    display.drawString(100, 23, "m/s");
+    display.drawString(102, 53, "st/min");
+
+    // set time display
+    display.setFont(Roboto_Slab_Bold_27);
+    display.setTextAlignment(TEXT_ALIGN_RIGHT);
+    display.drawString(128, 26, String(round((spm + old_spm) / 2), 0));
+    display.drawString(128, -3, String(Ms, 2)); // "m/s"
+    display.setTextAlignment(TEXT_ALIGN_LEFT);
+    display.drawString(0, -3, String(meters, DEC)); //"m"
+
+    /*-------SIMULATE ROWING-------------*/
+    // if (random(0, 100) < 30)
+    //{
+    //   rowerinterrupt();
+    // }
+    /*-------SIMULATE ROWING-------------*/
+
+    display.display();
+  }
+}
+
+void loop()
+{
+  row_start();
+}
