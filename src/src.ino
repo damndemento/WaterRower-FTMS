@@ -480,6 +480,7 @@ void reset()
     stm_RA.clear();
     mps_RA.clear();
 }
+
 void setup()
 {
     // Start the OLED Display
@@ -530,6 +531,7 @@ void setup()
     // Reset counters and parameters
     reset();
 }
+
 void rowing()
 {
     while (stoprowing == 0)
@@ -629,5 +631,34 @@ void rowing()
         display.drawString(0, -3, String(meters, DEC));
 
         display.display();
+    }
+}
+
+void loop()
+{
+    // Start rowing when the device is ready
+    if (clicks == 0)
+    {
+        row_start();
+    }
+
+    // Update BLE connection status
+    if (bleInitFlag)
+    {
+        if (deviceConnected)
+        {
+            bleConnectionStatus = true;
+        }
+        else
+        {
+            bleConnectionStatus = false;
+        }
+    }
+
+    // Periodically refresh BLE data even if strokes are zero
+    if (bleConnectionStatus)
+    {
+        setCxRowerData();
+        delay(500);
     }
 }
