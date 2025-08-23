@@ -715,8 +715,11 @@ void setup()
   delay(500);
   
   // MODIFIED: Attach both interrupts
-  attachInterrupt(ROWERINPUT, rowerdebounceinterrupt, CHANGE);
-  attachInterrupt(ROWERINPUT2, rowerdebounceinterrupt2, CHANGE);  // NEW
+  attachInterrupt(digitalPinToInterrupt(ROWERINPUT), rowerdebounceinterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ROWERINPUT2), rowerdebounceinterrupt, CHANGE);
+
+  //attachInterrupt(ROWERINPUT, rowerdebounceinterrupt, CHANGE);
+  //attachInterrupt(ROWERINPUT2, rowerdebounceinterrupt2, CHANGE);
   
   timer1 = millis();
   timer2 = millis();
@@ -738,14 +741,16 @@ void rowing()
     }
     lastStrokeCount = strokes; // Update stroke count for comparison
     
-    // calculate split times every 500m
-    if ((int(meters) % 500) == 0 && meters > 0)
-    {
-      timer2 = millis();
-      if ((millis() - timer2) >= 1000)
-      {
-        split();
-      }
+    // SPLIT 500 meter (trigger once when crossing a boundary)
+    static int lastSplitBlock = 0;
+    int currentBlock = (int)(meters / 500);
+
+    if (currentBlock > lastSplitBlock) {
+      float timeFor500m = (float)(millis() - splitStartTime) / 1000.0;
+      splitStartTime = millis();
+      Serial.print("Split Time for 500m: ");
+      Serial.println(timeFor500m);
+      lastSplitBlock = currentBlock;
     }
 
     if ((millis() - timer1) >= 1000)
@@ -773,7 +778,7 @@ void rowing()
         long sec = 1000 * (millis() - start);
         rdKpi.strokeRate = (int)round(spm + old_spm);
         rdKpi.strokeCount = strokes;
-        rdKpi.averageStokeRate = (int)(strokes * 60 * 2 / sec);
+        rdKpi.averageStokeRate = (int)(strokes * 60 / sec);
         rdKpi.totalDistance = (int)meters; // Now uses physics-calculated distance
         rdKpi.instantaneousPace = (int)round(500 / Ms); // pace for 500m
         float avrMs = meters / sec;
