@@ -748,7 +748,7 @@ void rowing()
     int currentBlock = (int)(meters / 500);
 
     if (currentBlock > lastSplitBlock) {
-      float timeFor500m = (float)(millis() - splitStartTime) / 1000.0;
+      float timeFor500m = (float)(millis() - splitStartTime) / 1000.0; // convert ms to seconds
       splitStartTime = millis();
       Serial.print("Split Time for 500m: ");
       Serial.println(timeFor500m);
@@ -760,7 +760,7 @@ void rowing()
       timer1 = millis();
 
       // MODIFIED: Use new physics-based calculation
-      Ms = calcstrokerate();
+      Ms = calcstrokerate(); // returns boatSpeed in m/s
 
       // calculate moving average of strokes/min
       old_spm = (int)spm;
@@ -775,26 +775,24 @@ void rowing()
       }
 
       if (deviceConnected)
-      { //** Send a value to protopie. The value is in txValue **//
-
-        long sec = 1000 * (millis() - start);
+      { 
+        long sec = (millis() - start) / 1000; // convert ms to seconds
         rdKpi.strokeRate = (int)round(spm + old_spm);
         rdKpi.strokeCount = strokes;
-        rdKpi.averageStokeRate = (int)(strokes * 60 / sec);
+        rdKpi.averageStokeRate = (sec > 0) ? (int)(strokes * 60 / sec) : 0;
         rdKpi.totalDistance = (int)meters; // Now uses physics-calculated distance
-        rdKpi.instantaneousPace = (int)round(500 / Ms); // pace for 500m
-        float avrMs = meters / sec;
-        rdKpi.averagePace = (int)round(500 / avrMs);
-        rdKpi.instantaneousPower = (int)round(2.8 * Ms * Ms * Ms); // https://www.concept2.com/indoor-rowers/training/calculators/watts-calculator
+        rdKpi.instantaneousPace = (Ms > 0) ? (int)round(500 / Ms) : 0; // pace for 500m
+        float avrMs = (sec > 0) ? (meters / sec) : 0;
+        rdKpi.averagePace = (avrMs > 0) ? (int)round(500 / avrMs) : 0;
+        rdKpi.instantaneousPower = (int)round(2.8 * Ms * Ms * Ms); 
         rdKpi.averagePower = (int)round(2.8 * avrMs * avrMs * avrMs);
         rdKpi.elapsedTime = sec;
 
         setCxRowerData();
-        // setCxLightRowerData();
-        // delay(500); // bluetooth stack will go into congestion, if too many packets are sent
+
         SerialDebug.println("Send data " + String(rdKpi.strokeCount) + 
-                           " Speed: " + String(Ms, 2) + "m/s " +
-                           " Distance: " + String(meters, 1) + "m");
+                           " Speed: " + String(Ms, 2) + " m/s " +
+                           " Distance: " + String(meters, 1) + " m");
 
         delay(10);
 
@@ -828,11 +826,11 @@ void rowing()
       }
     }
 
+    // ---------------- DISPLAY ----------------
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.drawString(5, 23, "meters");
-    // display.drawString(24, 53, "time");
     display.drawString(100, 23, "m/s");
     display.drawString(102, 53, "st/min");
 
@@ -844,16 +842,10 @@ void rowing()
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.drawString(0, -3, String((int)meters, DEC)); //"m" - Cast to int for display
 
-    /*-------SIMULATE ROWING-------------*/
-    // if (random(0, 100) < 30)
-    //{
-    //   rowerinterrupt();
-    // }
-    /*-------SIMULATE ROWING-------------*/
-
     display.display();
   }
 }
+
 
 void loop()
 {
