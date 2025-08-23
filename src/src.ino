@@ -149,6 +149,10 @@ int stoprowing = 0; // since the esp32lolin has no usable buttons this is used f
 // ADD: New variables for dual sensor stroke detection
 volatile int lastSensor = 0;           // Track which sensor triggered last (1 or 2)  
 volatile int directionChanges = 0;     // Count direction changes
+// NEW: Rowing inactivity timeout variables
+unsigned long lastStrokeTime = 0;
+int lastStrokeCount = 0;
+const unsigned long ROWING_TIMEOUT = 300000; // 5 minutes in milliseconds
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -516,6 +520,7 @@ void IRAM_ATTR rowerinterrupt(int sensorNum)
         strokes++;
         directionChanges = 0;
         SerialDebug.println("NEW STROKE! Total: " + String(strokes));
+        lastStrokeTime = millis(); // NEW: Update last stroke time
         
         // NEW: Add stroke power to boat momentum based on current acceleration
         float strokePower = STROKE_POWER_BASE * (1.0 + (accel / 100.0)); // Scale power by acceleration
@@ -672,6 +677,10 @@ void reset()
   boatSpeed = 0.0;
   boatMomentum = 0.0;
   lastPhysicsUpdate = millis();
+
+  // NEW: Reset timeout variables
+  lastStrokeTime = millis();
+  lastStrokeCount = 0;
 }
 
 void setup()
@@ -721,6 +730,13 @@ void rowing()
   {
     // NEW: Update boat physics continuously
     updateBoatPhysics();
+
+    // NEW: Check for rowing inactivity timeout
+    if (strokes == lastStrokeCount && strokes > 0 && (millis() - lastStrokeTime) > ROWING_TIMEOUT) {
+      SerialDebug.println("Rowing timeout - stopping session");
+      stoprowing = 1; // Exit rowing loop
+    }
+    lastStrokeCount = strokes; // Update stroke count for comparison
     
     // calculate split times every 500m
     if ((int(meters) % 500) == 0 && meters > 0)
