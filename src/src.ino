@@ -119,6 +119,7 @@ volatile unsigned long last_click_time = 0;
 volatile unsigned long old_split = 0;
 volatile unsigned long split_time = 0;
 volatile unsigned long start_split;
+unsigned long splitStartTime = 0;
 long debouncing_time = 15; // Debouncing Time in Milliseconds
 volatile unsigned long last_micros;
 volatile int clicks = 0;
@@ -668,6 +669,7 @@ void reset()
   stm_RA.clear();
   trend = 0;
   resetTimer = 0;
+  splitStartTime = millis();
   
   // NEW: Reset dual sensor variables
   lastSensor = 0;
