@@ -121,7 +121,8 @@ volatile unsigned long split_time = 0;
 volatile unsigned long start_split;
 unsigned long splitStartTime = 0;
 long debouncing_time = 15; // Debouncing Time in Milliseconds
-volatile unsigned long last_micros;
+volatile unsigned long last_micros1 = 0;
+volatile unsigned long last_micros2 = 0;
 volatile int clicks = 0;
 volatile int clicks_old = 0;
 volatile float data_output = 0;
@@ -204,7 +205,7 @@ void initBLE()
   BLEDevice::init(BLE_SERVICE_NAME);
 
   // Create the BLE Server
-  BLEServer *pServer = BLEDevice::createServer();
+  pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
 
   // Add the Fitness Machine Service definition
@@ -544,10 +545,10 @@ void IRAM_ATTR rowerinterrupt(int sensorNum)
 void IRAM_ATTR rowerdebounceinterrupt()
 {
   noInterrupts();
-  if ((long)(micros() - last_micros) >= debouncing_time * 1000)
+  if ((long)(micros() - last_micros1) >= debouncing_time * 1000)
   {
     rowerinterrupt(1);  // Call with sensor 1
-    last_micros = micros();
+    last_micros1 = micros();
   }
   interrupts();
 }
@@ -556,10 +557,10 @@ void IRAM_ATTR rowerdebounceinterrupt()
 void IRAM_ATTR rowerdebounceinterrupt2()
 {
   noInterrupts();
-  if ((long)(micros() - last_micros) >= debouncing_time * 1000)
+  if ((long)(micros() - last_micros2) >= debouncing_time * 1000)
   {
     rowerinterrupt(2);  // Call with sensor 2  
-    last_micros = micros();
+    last_micros2 = micros();
   }
   interrupts();
 }
