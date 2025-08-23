@@ -716,7 +716,7 @@ void setup()
   
   // MODIFIED: Attach both interrupts
   attachInterrupt(digitalPinToInterrupt(ROWERINPUT), rowerdebounceinterrupt, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(ROWERINPUT2), rowerdebounceinterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ROWERINPUT2), rowerdebounceinterrupt2, CHANGE);
 
   //attachInterrupt(ROWERINPUT, rowerdebounceinterrupt, CHANGE);
   //attachInterrupt(ROWERINPUT2, rowerdebounceinterrupt2, CHANGE);
