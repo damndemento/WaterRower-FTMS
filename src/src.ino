@@ -92,7 +92,7 @@ unsigned long previousTime = 0;
 
 /*-----------------SETUP--PINS-----------------------------*/
 const int ROWERINPUT = 2; // the input pin where the waterrower sensor is connected
-const int ROWERINPUT2 = 3; // ADD: second reed sensor pin
+const int ROWERINPUT2 = 15; // ADD: second reed sensor pin
 
 /*-----------------CONSTANTS-------------------------------*/
 // const float Ratio = 4.8; // from old script 4.8; meters per rpm = circumference of rotor (D=34cm) -> 1,068m -> Ratio = 0.936 ; WaterRower 7,3 m/St. -> Ratio: 3.156
@@ -120,7 +120,7 @@ volatile unsigned long old_split = 0;
 volatile unsigned long split_time = 0;
 volatile unsigned long start_split;
 unsigned long splitStartTime = 0;
-long debouncing_time = 15; // Debouncing Time in Milliseconds
+long debouncing_time = 5; // Debouncing Time in Milliseconds
 volatile unsigned long last_micros1 = 0;
 volatile unsigned long last_micros2 = 0;
 volatile int clicks = 0;
