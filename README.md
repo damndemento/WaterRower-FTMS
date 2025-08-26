@@ -9,7 +9,7 @@ I added a second sensor to the rower and changed the logic for strokes and accel
 
 There is a precompiled firmware in the firmware folder of this project. I used VSCode with **PlatformIO** to edit and compile this project.
 
-Use the precompiled "firmware_vendomnia_1magnet.bin" or download and import the project to VSCode or similar and compile and upload your own firmware.bin file to the device.
+Use the precompiled "firmware_1magnet.bin" or download and import the project to VSCode or similar and compile and upload your own firmware.bin file to the device.
 
 ![alt tag](https://github.com/damndemento/vendomniaBLE/blob/main/wemos-esp32_com_oled-pinout.webp)
 
